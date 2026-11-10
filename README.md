@@ -26,6 +26,28 @@ This project was developed as part of the Weekly 5 assignment to practice Object
   - Expense
 - Display transaction amounts in Indonesian Rupiah format.
 
+## Application Screenshots
+
+Choose a registered account to open its wallet:
+
+![E-Wallet account selection screen](screenshots/account-selection.png)
+
+The wallet dashboard shows the available balance, wallet number, and shortcuts to top up, transfer, and view transaction history:
+
+![E-Wallet wallet dashboard](screenshots/wallet-dashboard.png)
+
+Top up a wallet with a custom amount or choose one of the quick amounts:
+
+![E-Wallet top-up form](screenshots/top-up.png)
+
+Send funds to another user by selecting a recipient and entering the amount:
+
+![E-Wallet transfer form](screenshots/transfer.png)
+
+Review incoming and outgoing transactions, and filter the history by type:
+
+![E-Wallet transaction history](screenshots/transaction-history.png)
+
 ## Technology Stack
 
 - **Language:** C#

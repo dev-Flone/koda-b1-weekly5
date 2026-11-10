@@ -20,13 +20,16 @@
 --        TABLE_TYPE
 -- FROM   INFORMATION_SCHEMA.TABLES;
 -- -- T-SQL System Views Query
--- SELECT name AS ObjectName,
---        type_desc AS ObjectType
--- FROM   sys.objects
--- WHERE  type IN ('U', 'V'); -- 'U' = User Table, 'V' = View
--- SELECT *
--- FROM   Users;
--- SELECT *
--- FROM   Wallets;
--- SELECT *
--- FROM   Transactions;
+SELECT name AS ObjectName,
+       type_desc AS ObjectType
+FROM   sys.objects
+WHERE  type IN ('U', 'V'); -- 'U' = User Table, 'V' = View
+
+SELECT *
+FROM   Users;
+
+SELECT *
+FROM   Wallets;
+
+SELECT *
+FROM   Transactions;
