@@ -1,37 +1,152 @@
-@model EWallet.Mvc.ViewModel.TopUpViewModel;
+@model EWallet.Mvc.ViewModel.TopUpViewModel
 
 @{
     ViewData["Title"] = "Top Up";
+    var quickAmounts = new[] { 50000, 100000, 250000, 500000 };
+    var culture = System.Globalization.CultureInfo.GetCultureInfo("id-ID");
 }
 
-<div class="container  mt-5">
-    <h2>Top Up Wallet</h2>
+@section Styles {
+    <style>
+        .form-page {
+            max-width: 560px;
+        }
 
-    <form asp-action="TopUp" method="post">
-        <input type="hidden" asp-for="UserId">
+        .form-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 1rem;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, .04), 0 8px 24px rgba(15, 23, 42, .04);
+        }
 
-        <div class="mb-3">
-            <label asp-for="Amount" class="form-label">Amount</label>
+        .form-card .form-label {
+            font-size: .875rem;
+            font-weight: 600;
+            color: #334155;
+        }
 
-            <input asp-for="Amount" type="number" step="10000" class="form-control" placeholder="Enter amount">
+        .form-card .form-control,
+        .form-card .input-group-text {
+            border-radius: .625rem;
+            padding: .65rem .85rem;
+        }
 
-            <span asp-validation-for="Amount" class="text-danger"></span>
+        .form-card .input-group>.form-control {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+
+        .form-card .input-group>.input-group-text {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+            background: #f8fafc;
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        .form-card .form-control:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 .2rem rgba(99, 102, 241, .15);
+        }
+
+        .quick-amounts .btn {
+            border-radius: 999px;
+            font-size: .8125rem;
+            font-weight: 600;
+            padding: .3rem .85rem;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .field-error {
+            font-size: .8125rem;
+        }
+
+        .action-btn {
+            border-radius: .75rem;
+            padding: .7rem 1.25rem;
+            font-weight: 600;
+        }
+    </style>
+}
+
+<div class="container form-page py-5">
+
+    <header class="mb-4">
+        <p class="text-uppercase text-muted small fw-semibold mb-1">Wallet</p>
+        <h1 class="h3 fw-bold mb-1">Top Up Wallet</h1>
+        <p class="text-muted mb-0">Add funds to your balance.</p>
+    </header>
+
+    <div class="card form-card">
+        <div class="card-body p-4">
+            <form asp-action="TopUp" method="post" novalidate>
+                <input type="hidden" asp-for="UserId" />
+
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger small py-2" role="alert"></div>
+
+                <div class="mb-3">
+                    <label asp-for="Amount" class="form-label">Amount</label>
+                    <div class="input-group">
+                        <span class="input-group-text">Rp</span>
+                        <input asp-for="Amount" type="number" step="10000" minimum="10000" inputmode="numeric"
+                               class="form-control" autofocus placeholder="Enter amount" autocomplete="off" />
+                    </div>
+                    <span asp-validation-for=" Amount" class="text-danger field-error"></span>
+
+                    <div class="quick-amounts d-flex flex-wrap gap-2 mt-3" aria-label="Quick amounts">
+                        @foreach (var amount in quickAmounts)
+                        {
+                            <button type="button" class="btn btn-outline-secondary" data-amount="@amount">
+                                @amount.ToString("N0", culture)
+                            </button>
+                        }
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="Description" class="form-label">
+                        Description <span class="text-muted fw-normal">(optional)</span>
+                    </label>
+                    <textarea asp-for="Description" class="form-control" rows="3"
+                              placeholder="e.g. Monthly savings"></textarea>
+                    <span asp-validation-for="Description" class="text-danger field-error"></span>
+                </div>
+
+                <div class="d-flex flex-column flex-sm-row gap-2">
+                    <button type="submit" class="btn btn-primary action-btn flex-sm-grow-1">Top Up</button>
+                    <a asp-action="Dashboard" asp-route-userId="@Model.UserId"
+                       class="btn btn-outline-secondary action-btn">Cancel</a>
+                </div>
+            </form>
         </div>
-
-        <div class="mb-3">
-            <label asp-for="Description" class="form-label">Description</label>
-
-            <textarea asp-for="Description" class="form-control" rows="3" placeholder="Optional description"></textarea>
-
-            <span asp-validation-for="Description" class="text-danger"></span>
-        </div>
-
-        <button type="submit" class="btn btn-primary">Submit Top Up</button>
-
-        <a asp-action="Dashboard" asp-route-userId="@Model.UserId" class="btn btn-secondary">Cancel</a>
-    </form>
+    </div>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.querySelectorAll('.quick-amounts [data-amount]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var input = document.getElementById('@Html.IdFor(m => m.Amount)');
+                input.value = btn.dataset.amount;
+                input.dispatchEvent(new Event('input', { bubbles: true }));
+                input.focus();
+            });
+        });
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const amountInput = document.getElementById("Amount");
+
+            if (!amountInput) return;
+
+            // Remove the default zero when the form is first displayed.
+            if (amountInput.value === "0") {
+                amountInput.value = "";
+            }
+
+            // Remove unnecessary leading zeros while typing.
+            amountInput.addEventListener("input", function () {
+                this.value = this.value.replace(/^0+(?=\d)/, "");
+            });
+        });
+    </script>
 }

@@ -1,31 +1,218 @@
+@using System.Globalization
 @model EWallet.Core.Models.Wallet
 
 @{
     ViewData["Title"] = "Wallet Dashboard";
+
+    @* Currency Localization *@
+    var rupiah = (CultureInfo)CultureInfo.GetCultureInfo("id-Id").Clone();
+    rupiah.NumberFormat.CurrencySymbol = "Rp. ";
+
     var user = ViewBag.User as EWallet.Core.Models.User;
+    var displayName = string.IsNullOrWhiteSpace(user?.Name) ? "there" : user!.Name;
+    var balance = Model.Balance.ToString("C", rupiah);
+
+    var totalIncome = (decimal)ViewBag.TotalIncome;
+    var totalExpense = (decimal)ViewBag.TotalExpense;
+
+    var incomeDisplay = totalIncome.ToString("C0", rupiah);
+    var expenseDisplay = totalExpense.ToString("C0", rupiah);
 }
 
-<div class="container mt-5">
-    <h2>Welcome, @user?.Name!</h2>
-    <p class="text-muted">Here is your wallet information.</p>
-    <div class="card shadow-sm mt-4">
-        <div class="card-body">
-            <h5 class="card-title">@user?.Name's Wallet</h5>
+@section Styles {
+    <style>
+        .wallet-page {
+            max-width: 640px;
+        }
 
-            <p><strong>Wallet Number: </strong>@Model.WalletNumber</p>
-            <p><strong>Balance:
-            </strong>@Model.Balance.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("id-ID"))</p>
-            <a asp-controller="Wallet" asp-action="TopUp" asp-route-userId="@Model.UserId"
-               class="btn btn-primary mt-3">Top Up</a>
-            <a asp-controller="Wallet" asp-action="Transfer" asp-route-userId="@Model.UserId"
-               class="btn btn-success mt-3">Transfer</a>
-            <a asp-controller="Wallet" asp-action="History" asp-route-userId="@Model.UserId" class="btn btn-info mt-3">
-                Transaction History
-            </a>
-        </div>
+        /* Balance card */
+        .wallet-card {
+            border: 0;
+            border-radius: 1.25rem;
+            color: #fff;
+            background:
+                radial-gradient(120% 140% at 100% 0%, rgba(99, 102, 241, .35) 0%, rgba(99, 102, 241, 0) 55%),
+                linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            box-shadow: 0 12px 32px rgba(15, 23, 42, .2);
+        }
+
+        .wallet-card .label {
+            font-size: .75rem;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, .6);
+        }
+
+        .wallet-card .balance {
+            font-size: clamp(1.75rem, 5vw, 2.5rem);
+            font-weight: 700;
+            letter-spacing: -.02em;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .wallet-card .number {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            letter-spacing: .06em;
+            color: rgba(255, 255, 255, .85);
+        }
+
+        /* Actions */
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: .5rem;
+            border-radius: .875rem;
+            padding: .85rem 1rem;
+            font-weight: 600;
+        }
+
+        .action-btn svg {
+            width: 1.05rem;
+            height: 1.05rem;
+            flex: none;
+        }
+
+        /* Income / expense stats */
+        .stat-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 1rem;
+            background: #fff;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, .04);
+        }
+
+        .stat-card .stat-icon {
+            display: inline-grid;
+            place-items: center;
+            width: 2.25rem;
+            height: 2.25rem;
+            border-radius: .65rem;
+            flex: none;
+        }
+
+        .stat-card .stat-icon svg {
+            width: 1.1rem;
+            height: 1.1rem;
+        }
+
+        .stat-income .stat-icon {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .stat-expense .stat-icon {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .stat-card .stat-label {
+            font-size: .8125rem;
+            font-weight: 600;
+            color: #64748b;
+        }
+
+        .stat-card .stat-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -.01em;
+            font-variant-numeric: tabular-nums;
+            color: #0f172a;
+            word-break: break-word;
+        }
+    </style>
+}
+
+<div class="container wallet-page py-5">
+
+    <header class="mb-4">
+        <p class="text-uppercase text-muted small fw-semibold mb-1">Wallet Dashboard</p>
+        <h1 class="h3 fw-bold mb-1">Welcome back, @displayName</h1>
+        <p class="text-muted mb-0">Here's an overview of your wallet.</p>
+    </header>
+
+    <div class="d-flex flex-column gap-3">
+
+        <section class="card wallet-card" aria-label="Wallet summary">
+            <div class="card-body p-4 p-md-5">
+                <div class="label mb-2">Available balance</div>
+                <div class="balance mb-4">@balance</div>
+
+                <div class="label mb-1">Wallet number</div>
+                <div class="number">@Model.WalletNumber</div>
+            </div>
+        </section>
+
+        <section class="row g-3" aria-label="Wallet actions">
+            <div class="col-12 col-sm-4">
+                <a asp-controller="Wallet" asp-action="TopUp" asp-route-userId="@Model.UserId"
+                   class="btn btn-primary action-btn w-100">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                         stroke-linejoin="round" aria-hidden="true">
+                        <path d="M12 5v14M5 12h14" />
+                    </svg>
+                    Top Up
+                </a>
+            </div>
+            <div class="col-12 col-sm-4">
+                <a asp-controller="Wallet" asp-action="Transfer" asp-route-userId="@Model.UserId"
+                   class="btn btn-outline-primary action-btn w-100">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                         stroke-linejoin="round" aria-hidden="true">
+                        <path d="M5 12h14M13 6l6 6-6 6" />
+                    </svg>
+                    Transfer
+                </a>
+            </div>
+            <div class="col-12 col-sm-4">
+                <a asp-controller="Wallet" asp-action="History" asp-route-userId="@Model.UserId"
+                   class="btn btn-outline-secondary action-btn w-100">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                         stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="9" />
+                        <path d="M12 7v5l3 2" />
+                    </svg>
+                    History
+                </a>
+            </div>
+        </section>
+
+        <section class="row g-3" aria-label="Income and expense summary">
+            <div class="col-12 col-sm-6">
+                <div class="stat-card stat-income h-100 p-3 d-flex align-items-center gap-3">
+                    <span class="stat-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                             stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 5v14M6 13l6 6 6-6" />
+                        </svg>
+                    </span>
+                    <div class="min-w-0">
+                        <div class="stat-label">Total Income</div>
+                        <div class="stat-value">@incomeDisplay</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6">
+                <div class="stat-card stat-expense h-100 p-3 d-flex align-items-center gap-3">
+                    <span class="stat-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                             stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 19V5M6 11l6-6 6 6" />
+                        </svg>
+                    </span>
+                    <div class="min-w-0">
+                        <div class="stat-label">Total Expense</div>
+                        <div class="stat-value">@expenseDisplay</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
     </div>
 
-    <div class="mt-4">
-        <a asp-controller="" Home" asp-action="Index" class="btn btn-secondary">Back to Users</a>
-    </div>
+    <footer class="mt-4">
+        <a asp-controller="Home" asp-action="Index" class="link-secondary text-decoration-none">
+            &larr; Back to Users
+        </a>
+    </footer>
 </div>

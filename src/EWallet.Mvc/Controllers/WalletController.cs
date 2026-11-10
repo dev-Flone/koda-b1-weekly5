@@ -27,7 +27,16 @@ public class WalletController(IUserService userService, IWalletService walletSer
             return NotFound();
         }
 
+        // Get All Transaction
+        var transactions = await _transactionService.GetByUserId(userId);
+
+        // Total income dan expense
+        var totalIncome = transactions.Where(t => t.ReceiverWalletId == wallet.Id).Sum(t => t.Amount);
+        var totalExpense = transactions.Where(t => t.SenderWalletId == wallet.Id).Sum(t => t.Amount);
+
         ViewBag.User = user;
+        ViewBag.TotalIncome = totalIncome;
+        ViewBag.TotalExpense = totalExpense;
 
         return View(wallet);
     }
