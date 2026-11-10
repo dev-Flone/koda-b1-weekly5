@@ -1,0 +1,29 @@
+﻿@model List<EWallet.Core.Models.User>
+
+@{
+    ViewData["Title"] = "Select User";
+}
+
+<div class="container mt-5">
+    <h1 class="mb-2">Welcome to E-Wallet</h1>
+
+    <p class="text-muted mb-4">Select an account to continue.</p>
+
+    <div class="row">
+        @foreach (var user in Model)
+        {
+            <div class="col-md-4 mb-3">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">@user.Name</h5>
+
+                        <p class="card-text text-muted">@user.Email</p>
+
+                        <a asp-controller="Wallet" asp-action="Dashboard" asp-route-userId="@user.Id"
+                           class="btn btn-primary">Select Account</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

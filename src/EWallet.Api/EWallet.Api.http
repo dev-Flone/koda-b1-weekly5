@@ -1,0 +1,105 @@
+
+@baseUrl = http://localhost:5224
+
+### ==============================
+### USERS
+### ==============================
+
+### 1. Get All Users
+GET {{baseUrl}}/api/users
+Accept: application/json
+
+### 2. Get User By ID
+GET {{baseUrl}}/api/users/2
+Accept: application/json
+
+### 3. Create User
+POST {{baseUrl}}/api/users
+Content-Type: application/json
+
+{
+
+  "name": "Dimas",
+  "email": "dimas1@gmail.com",
+  "phone": "081234567890"
+}
+
+### 4. Update User
+PUT {{baseUrl}}/api/users/2
+Content-Type: application/json
+
+{
+  "name": "Andi",
+  "email": "andid@gmail.com",
+  "phone": "081234567891"
+}
+
+
+### ==============================
+### WALLETS
+### ==============================
+
+
+### 5. Get Wallet By User ID
+GET {{baseUrl}}/api/wallets/10
+Accept: application/json
+
+### 6. Top Up Wallet
+POST {{baseUrl}}/api/wallets/10/topups
+Content-Type: application/json
+
+{
+  "amount": 1000000,
+  "description": "Top up via HTTP request"
+}
+
+### 7. Top Up - Invalid Amount
+POST {{baseUrl}}/api/wallets/1/topups
+Content-Type: application/json
+
+{
+  "amount": 0,
+  "description": "Invalid top up"
+}
+
+
+### ==============================
+### TRANSACTIONS
+### ==============================
+
+### 8. Transfer
+POST {{baseUrl}}/api/transfers
+Content-Type: application/json
+
+{
+  "senderUserId": 1,
+  "receiverUserId": 2,
+  "amount": 50000,
+  "description": "Transfer to Budi"
+}
+
+### 9. Transfer - Insufficient Balance
+POST {{baseUrl}}/api/transfers
+Content-Type: application/json
+
+{
+  "senderUserId": 1,
+  "receiverUserId": 2,
+  "amount": 999999999,
+  "description": "Insufficient balance test"
+}
+
+### 10. Transfer - Invalid Amount
+POST {{baseUrl}}/api/transfers
+Content-Type: application/json
+
+{
+  "senderUserId": 1,
+  "receiverUserId": 2,
+  "amount": -10000,
+  "description": "Invalid amount test"
+}
+
+### 11. Get User Transaction History
+GET {{baseUrl}}/api/users/2/transactions
+Accept: application/json

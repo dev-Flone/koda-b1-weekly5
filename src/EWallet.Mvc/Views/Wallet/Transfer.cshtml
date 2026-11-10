@@ -1,0 +1,78 @@
+@model EWallet.Mvc.ViewModel.TransferViewModel
+
+@{
+    ViewData["Title"] = "Transfer";
+    var user = ViewBag.User as EWallet.Core.Models.User;
+    var wallet = ViewBag.Wallet as EWallet.Core.Models.Wallet;
+    var recipients = ViewBag.Recipients as List<EWallet.Core.Models.User>;
+}
+
+<div class="container mt-5">
+    <h2>Transfer Money</h2>
+    <p class="text-muted">Transfer money from your wallet to another wallet.</p>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h5>Sender Information</h5>
+            <p><strong>Name: </strong>@user?.Name</p>
+            <p><strong>Wallet Number: </strong>@wallet?.WalletNumber</p>
+            <p><strong>Available Balance: </strong>@wallet?.Balance.ToString("C2",
+                                                System.Globalization.CultureInfo.GetCultureInfo("id-ID"))</p>
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <form asp-action="Transfer" method="post">
+                    <input type="hidden" asp-for="SenderUserId">
+
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                    <div class="mb-3">
+                        <label asp-for="ReceiverUserId" class="form-label">Recipient</label>
+
+                        <select asp-for="ReceiverUserId" class="form-select">
+                            <option value="0">-- Select Recipient --</option>
+
+                            @if (recipients is not null)
+                            {
+                                foreach (var recipient in recipients)
+                                {
+                                    <option value="@recipient.Id">
+                                        @recipient.Name (@recipient.Email)
+                                    </option>
+                                }
+                            }
+                        </select>
+
+                        <span asp-validation-for="ReceiverUserId" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Amount" class="form-label">Amount</label>
+
+                        <input asp-for="Amount" type="number" step="1000" min="10000" class="form-control"
+                               placeholder="Enter transfer amount">
+
+                        <span asp-validation-for="Amount" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label">Description</label>
+
+                        <textarea asp-for="Description" class="form-control" rows="3"
+                                  placeholder="Optional description"></textarea>
+
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Transfer Now</button>
+
+                    <a asp-action="Dashboard" asp-route-userId="@Model.SenderUserId" class="btn btn-secondary">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    @section Scripts {
+        <partial name="_ValidationScriptsPartial" />
+    }

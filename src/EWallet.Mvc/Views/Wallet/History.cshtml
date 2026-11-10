@@ -1,0 +1,80 @@
+@model EWallet.Mvc.ViewModel.TransactionHistoryViewModel
+
+@{
+    ViewData["Title"] = "Transaction History";
+    var culture = System.Globalization.CultureInfo.GetCultureInfo("id-ID");
+}
+
+<div class="container mt-5">
+    <h2>Transaction History</h2>
+    <p class="text-muted">View all your wallet transactions.</p>
+
+    <div class="mb-4">
+        <a asp-action="History" asp-route-userId="@Model.UserId" asp-route-filter="All"
+           class="btn @(Model.Filter.Equals("all", StringComparison.OrdinalIgnoreCase) ? "btn-primary" : "btn-outline-primary")">All</a>
+
+        <a asp-action="History" asp-route-userId="@Model.UserId" asp-route-filter="Income"
+           class="btn @(Model.Filter.Equals("income", StringComparison.OrdinalIgnoreCase) ? "btn-primary" : "btn-outline-primary")">Income</a>
+
+        <a asp-action="History" asp-route-userId="@Model.UserId" asp-route-filter="Expense"
+           class="btn @(Model.Filter.Equals("expense", StringComparison.OrdinalIgnoreCase) ? "btn-primary" : "btn-outline-primary")">Expense</a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            @if (Model.Transactions.Count == 0)
+            {
+                <div class="text-center py-4">
+                    <p class="text-muted table-hover align-middle">No transactions found.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var item in Model.Transactions)
+                            {
+                                <tr>
+                                    <td>
+                                        @item.Transactions.CreatedAt.ToLocalTime().ToString("dd MMM yyyy")
+                                    </td>
+                                    <td>
+                                        @if (item.IsIncome)
+                                        {
+                                            <span class="badge bg-success">Income</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">Expense</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @(string.IsNullOrWhiteSpace(item.Transactions.Description) ? "-" :
+                                item.Transactions.Description)
+                                    </td>
+                                    <td class="@(item.IsIncome ? "text-success" : "text-danger") fw-bold">
+                                        @(item.IsIncome ? "+" : "-")@item.Transactions.Amount.ToString("C2", culture)
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a asp-action="Dashboard" asp-route-userId="@Model.UserId" class="btn btn-secondary">Back to Dashboard</a>
+    </div>
+</div>

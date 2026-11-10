@@ -1,0 +1,31 @@
+@model EWallet.Core.Models.Wallet
+
+@{
+    ViewData["Title"] = "Wallet Dashboard";
+    var user = ViewBag.User as EWallet.Core.Models.User;
+}
+
+<div class="container mt-5">
+    <h2>Welcome, @user?.Name!</h2>
+    <p class="text-muted">Here is your wallet information.</p>
+    <div class="card shadow-sm mt-4">
+        <div class="card-body">
+            <h5 class="card-title">@user?.Name's Wallet</h5>
+
+            <p><strong>Wallet Number: </strong>@Model.WalletNumber</p>
+            <p><strong>Balance:
+            </strong>@Model.Balance.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("id-ID"))</p>
+            <a asp-controller="Wallet" asp-action="TopUp" asp-route-userId="@Model.UserId"
+               class="btn btn-primary mt-3">Top Up</a>
+            <a asp-controller="Wallet" asp-action="Transfer" asp-route-userId="@Model.UserId"
+               class="btn btn-success mt-3">Transfer</a>
+            <a asp-controller="Wallet" asp-action="History" asp-route-userId="@Model.UserId" class="btn btn-info mt-3">
+                Transaction History
+            </a>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a asp-controller="" Home" asp-action="Index" class="btn btn-secondary">Back to Users</a>
+    </div>
+</div>

@@ -1,19 +1,45 @@
 # E-Wallet Application
 
-A console-based e-wallet application evolved into a web application using **ASP.NET Core Web API, Razor MVC, and SQL Server**. This project demonstrates Object-Oriented Programming (OOP), layered architecture, database management, and transaction processing using ADO.NET.
+A simple E-Wallet application built with **ASP.NET Core Web API**, **ASP.NET Core MVC (Razor Views)**, and **SQL Server** using **ADO.NET**.
 
-## Tech Stack
+This project was developed as part of the Weekly 5 assignment to practice Object-Oriented Programming, layered architecture, database relationships, REST API development, and MVC web application development.
+
+## Features
+
+### User Management
+- View all registered users.
+- View user details.
+- Create a new user with an automatically generated wallet.
+- Update user information.
+
+### Wallet Management
+- View wallet information and current balance.
+- Top up wallet balance.
+- Transfer funds between users.
+- Validate transaction amounts and wallet balances.
+
+### Transaction History
+- View transaction history.
+- Filter transactions by:
+  - All transactions
+  - Income
+  - Expense
+- Display transaction amounts in Indonesian Rupiah format.
+
+## Technology Stack
 
 - **Language:** C#
 - **Framework:** .NET 10
 - **Backend:** ASP.NET Core Web API
-- **Frontend:** ASP.NET Core Razor MVC
+- **Frontend:** ASP.NET Core MVC with Razor Views
 - **Database:** Microsoft SQL Server
-- **Data Access:** ADO.NET (`Microsoft.Data.SqlClient`)
+- **Data Access:** ADO.NET
 - **API Documentation:** Swagger / Swashbuckle
-- **Architecture:** Layered Architecture
+- **Database Driver:** Microsoft.Data.SqlClient
 
-## Project Structure
+## Project Architecture
+
+The solution uses a layered architecture with three main projects:
 
 ```text
 weekly5/
@@ -21,222 +47,145 @@ weekly5/
 │   ├── EWallet.Api/
 │   │   ├── Controllers/
 │   │   ├── Handlers/
-│   │   ├── Program.cs
-│   │   └── appsettings.json
+│   │   └── Program.cs
 │   │
 │   ├── EWallet.Core/
 │   │   ├── Data/
-│   │   ├── database/
 │   │   ├── DTOs/
 │   │   ├── Enums/
 │   │   ├── Exceptions/
 │   │   ├── Interfaces/
 │   │   ├── Models/
 │   │   ├── Repositories/
-│   │   └── Services/
+│   │   ├── Services/
+│   │   └── database/
 │   │
 │   └── EWallet.Mvc/
 │       ├── Controllers/
 │       ├── Models/
 │       ├── ViewModels/
 │       ├── Views/
-│       ├── wwwroot/
-│       └── Program.cs
+│       └── wwwroot/
 │
-├── EWallet.slnx
-└── README.md
+└── EWallet.slnx
 ```
 
-### Project Responsibilities
-
-| Project | Responsibility |
-|---|---|
-| EWallet.Api | Provides REST API endpoints |
-| EWallet.Mvc | Provides the web interface using Razor MVC |
-| EWallet.Core | Contains models, business logic, repositories, interfaces, and database access |
-
-Both API and MVC reference `EWallet.Core` directly and share the same business logic and database.
-
-## Architecture
+### Architecture Overview
 
 ```text
-              SQL Server
-                   |
-             EWallet.Core
-          /                \
-   EWallet.Api          EWallet.Mvc
-       |                     |
-   REST API              Razor Views
-       |                     |
-   API Clients          Web Browser
+              ┌─────────────────┐
+              │   EWallet.Api   │
+              │   REST API      │
+              └────────┬────────┘
+                       │
+                       ▼
+              ┌─────────────────┐
+              │   EWallet.Core  │
+              │                 │
+              │    Services     │
+              │    Repositories │
+              │    Models       │
+              │    Interfaces   │
+              └────────┬────────┘
+                       │
+                       ▼
+              ┌─────────────────┐
+              │   SQL Server    │
+              │    EWalletDb    │
+              └─────────────────┘
+
+              ┌─────────────────┐
+              │   EWallet.Mvc   │
+              │  Razor Views    │
+              └────────┬────────┘
+                       │
+                       └──────► EWallet.Core
 ```
 
-The application uses a layered approach:
-
-1. **Models** — Represent application entities such as User, Wallet, and Transaction.
-2. **DTOs** — Define request and response data structures for the API.
-3. **Interfaces** — Define contracts for repositories and services.
-4. **Repositories** — Handle database operations using ADO.NET.
-5. **Services** — Handle business logic and transaction processing.
-6. **Controllers** — Handle HTTP requests and MVC page interactions.
+Both API and MVC applications use the same Core project for business logic and database operations. They connect directly to the shared Core layer rather than MVC calling the API.
 
 ## Database Design
 
-Database name: `EWalletDb`
+The application uses three main tables:
 
-### Entity Relationship
+### Users
+Stores user information.
 
-```text
-Users
-  |
-  | 1 : 1
-  |
-Wallets
-  |
-  | 1 : N (Sender)
-  |
-Transactions
-  |
-  | N : 1 (Receiver)
-  |
-Wallets
+- Id (Primary Key)
+- Name
+- Email (Unique)
+- Phone
+
+### Wallets
+Stores wallet information.
+
+- Id (Primary Key)
+- UserId (Foreign Key, Unique)
+- WalletNumber (Unique)
+- Balance
+
+Relationship: One User has one Wallet (1:1).
+
+### Transactions
+Stores wallet transaction records.
+
+- Id (Primary Key)
+- SenderWalletId (Foreign Key, Nullable)
+- ReceiverWalletId (Foreign Key)
+- Type
+- Amount
+- Description
+- CreatedAt
+
+Relationship: A Wallet can participate in many Transactions, either as sender or receiver (1:N).
+
+### Transaction Types
+
+| Value | Type | Description |
+|---|---|---|
+| 1 | TopUp | Wallet balance top up |
+| 2 | Transfer | Transfer between wallets |
+
+For top-up transactions, `SenderWalletId` is NULL because the funds originate externally.
+
+## Getting Started
+
+### Prerequisites
+
+Make sure you have installed:
+
+- .NET 10 SDK
+- Microsoft SQL Server
+- SQL Server Management Studio (SSMS) or another SQL client
+- Visual Studio or Visual Studio Code (optional)
+
+### 1. Clone the Repository
+
+```bash
+git clone <repository-url>
+cd weekly5
 ```
 
-### Tables
+### 2. Create the Database
 
-**Users**
+Open SQL Server Management Studio and execute the following scripts in order:
 
-| Column | Type | Description |
-|---|---|---|
-| Id | INT | Primary key |
-| Name | NVARCHAR(100) | User name |
-| Email | NVARCHAR(150) | Unique email |
-| Phone | NVARCHAR(20) | Phone number |
+1. `src/EWallet.Core/database/01_create_database.sql`
+2. `src/EWallet.Core/database/02_create_table.sql`
+3. `src/EWallet.Core/database/03_seed_data.sql`
 
-**Wallets**
+The seed script inserts three sample users with their wallets and initial transaction records.
 
-| Column | Type | Description |
-|---|---|---|
-| Id | INT | Primary key |
-| UserId | INT | Unique foreign key to Users |
-| WalletNumber | NVARCHAR(20) | Unique wallet number |
-| Balance | DECIMAL(18,2) | Wallet balance |
+**Note:** Execute the seed script only once for a newly created database.
 
-**Transactions**
+### 3. Configure the Connection String
 
-| Column | Type | Description |
-|---|---|---|
-| Id | INT | Primary key |
-| SenderWalletId | INT | Nullable foreign key to Wallets |
-| ReceiverWalletId | INT | Foreign key to Wallets |
-| Type | INT | Transaction type |
-| Amount | DECIMAL(18,2) | Transaction amount |
-| Description | NVARCHAR(250) | Optional description |
-| CreatedAt | DATETIME2 | Transaction timestamp |
+Update the `DefaultConnection` value in:
 
-Transaction types:
+- `src/EWallet.Api/appsettings.json`
+- `src/EWallet.Mvc/appsettings.json`
 
-- `1` — Top Up
-- `2` — Transfer
-
-Top Up transactions have a NULL `SenderWalletId`, while Transfer transactions contain both sender and receiver wallet IDs.
-
-## Features
-
-### User Management
-- View all registered users.
-- View individual user information.
-- Create users with an automatically generated wallet.
-- Update user information.
-
-### Wallet Management
-- View wallet information.
-- Check wallet balance.
-- Top up wallet balance.
-- Validate top-up amounts.
-
-### Money Transfer
-- Transfer funds between users.
-- Validate sender and recipient wallets.
-- Prevent transfers to the same wallet.
-- Validate sufficient balance.
-- Record transfer history.
-- Use SQL transactions to ensure debit, credit, and transaction recording are committed or rolled back together.
-
-### Transaction History
-- View transaction history.
-- Filter transactions by:
-  - All
-  - Income
-  - Expense
-- Display localized currency amounts.
-
-## REST API Endpoints
-
-Base URL: `http://localhost:5224`
-
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | `/api/users` | Get all users |
-| GET | `/api/users/{id}` | Get user by ID |
-| POST | `/api/users` | Create a user and wallet |
-| PUT | `/api/users/{id}` | Update user information |
-| GET | `/api/wallets/{userId}` | Get wallet by user ID |
-| POST | `/api/wallets/{userId}/topups` | Top up wallet |
-| POST | `/api/transfers` | Transfer funds |
-| GET | `/api/users/{userId}/transactions` | Get user transaction history |
-
-### Swagger
-
-API documentation is available at:
-
-`http://localhost:5224/swagger`
-
-## Object-Oriented Programming
-
-This project applies OOP concepts through:
-
-- **Class and Object:** User, Wallet, Transaction, and service classes.
-- **Constructor:** Used for initializing objects and injecting dependencies.
-- **Encapsulation:** Models and business logic manage their respective data and operations.
-- **Abstraction:** Interfaces define contracts for repositories and services.
-- **Inheritance:** Classes reuse behavior through inheritance where appropriate.
-- **Polymorphism:** Interface implementations are resolved through dependency injection.
-- **Interface:** Repository and service contracts separate implementation from usage.
-
-## Database Setup
-
-Make sure Microsoft SQL Server is installed and running.
-
-The database scripts are located in:
-
-`src/EWallet.Core/database/`
-
-Execute the scripts in the following order using SQL Server Management Studio (SSMS):
-
-1. `01_create_database.sql`
-2. `02_create_table.sql`
-3. `03_seed_data.sql`
-
-The `04_migrate_transactions.sql` script is intended for updating an older database schema when necessary. It is not required when setting up a fresh database using the updated schema.
-
-The seed script inserts three dummy users:
-
-- Andi
-- Budi
-- Citra
-
-**Important:** Run the seed script only once for a fresh database to avoid duplicate data.
-
-The `file.sql` file in `EWallet.Api` is a development workspace for additional database changes and maintenance.
-
-## Configuration
-
-Both API and MVC projects use the same database connection configuration.
-
-Update the `ConnectionStrings:DefaultConnection` value in each project's `appsettings.json` if your SQL Server configuration differs.
-
-Example:
+Example using Windows Authentication:
 
 ```json
 {
@@ -246,58 +195,93 @@ Example:
 }
 ```
 
-Adjust the server name and authentication settings according to your environment.
+Change the server name and authentication settings according to your SQL Server configuration.
 
-## Running the Application
+### 4. Run the REST API
 
-Open a terminal in the solution root directory.
+Open a terminal at the solution root:
 
-### 1. Build the Solution
-
-```powershell
-dotnet build EWallet.slnx
-```
-
-### 2. Run the Web API
-
-Open the first terminal:
-
-```powershell
+```bash
 dotnet run --project src/EWallet.Api
 ```
 
-API URL:
+API base URL:
 
 `http://localhost:5224`
 
-Swagger URL:
+Swagger UI:
 
 `http://localhost:5224/swagger`
 
-### 3. Run the MVC Application
+### 5. Run the MVC Application
 
-Open a second terminal:
+Open another terminal at the solution root:
 
-```powershell
+```bash
 dotnet run --project src/EWallet.Mvc
 ```
 
-MVC URL:
+MVC application:
 
 `http://localhost:5096`
 
-Keep both applications running while testing their respective features.
+The API and MVC applications run independently but share the same database and Core business logic.
 
-## Notes
+## API Endpoints
 
-- This project uses ADO.NET for database access.
-- Entity Framework Core is not used.
-- API and MVC applications share the same Core services and repositories.
-- Database transactions are used to maintain consistency during money transfers.
+Base URL: `http://localhost:5224`
 
----
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/users` | Get all users |
+| GET | `/api/users/{id}` | Get user by ID |
+| POST | `/api/users` | Create user and wallet |
+| PUT | `/api/users/{id}` | Update user |
+| GET | `/api/wallets/{userId}` | Get wallet by user ID |
+| POST | `/api/wallets/{userId}/topups` | Top up wallet |
+| POST | `/api/transfers` | Transfer funds |
+| GET | `/api/users/{userId}/transactions` | Get transaction history |
 
-**Project:** E-Wallet Application  
-**Framework:** .NET 10  
-**Database:** SQL Server  
-**Learning Focus:** C#, OOP, ASP.NET Core Web API, Razor MVC, ADO.NET, and SQL Server.
+For request and response details, run the API and open Swagger UI.
+
+## Business Logic and Validation
+
+- Top-up and transfer amounts must be greater than zero.
+- Users cannot transfer funds to their own wallet.
+- Transfers require sufficient sender balance.
+- Sender balance, receiver balance, and transaction records are updated within a database transaction.
+- Database transactions are committed on success and rolled back on failure.
+- User creation and wallet creation are handled within one database transaction.
+- Transaction descriptions are optional.
+
+## Sample Users
+
+The database seed script provides the following sample accounts:
+
+| Name | Email | Wallet Number | Initial Balance |
+|---|---|---|---:|
+| Andi | andi@gmail.com | WLT001 | Rp400,000 |
+| Budi | budi@gmail.com | WLT002 | Rp400,000 |
+| Citra | citra@gmail.com | WLT003 | Rp750,000 |
+
+## Learning Objectives
+
+This project demonstrates practical implementation of:
+
+- Object-Oriented Programming (OOP)
+- Classes, Objects, and Constructors
+- Encapsulation
+- Inheritance, Abstraction, and Polymorphism
+- Interfaces
+- Collections and Generics
+- Layered Architecture
+- Repository and Service patterns
+- RESTful API development
+- ADO.NET database operations
+- SQL Server relationships and constraints
+- Database transactions and rollback handling
+- ASP.NET Core MVC and Razor Views
+
+## License
+
+This project was created for educational purposes.
