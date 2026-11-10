@@ -1,0 +1,22 @@
+# Build output
+[Bb]in/
+[Oo]bj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# IDE
+.idea/
+.vscode/
+
+# Local environment configuration
+appsettings.Development.json
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
