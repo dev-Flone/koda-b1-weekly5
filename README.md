@@ -1,213 +1,147 @@
-# E-Wallet Application
+# E-Wallet
 
-A simple E-Wallet application built with **ASP.NET Core Web API**, **ASP.NET Core MVC (Razor Views)**, and **SQL Server** using **ADO.NET**.
+Aplikasi dompet digital sederhana untuk mengelola pengguna, saldo, top up, transfer, dan riwayat transaksi. Dibuat dengan ASP.NET Core Web API, ASP.NET Core MVC (Razor Views), SQL Server, dan ADO.NET.
 
-This project was developed as part of the Weekly 5 assignment to practice Object-Oriented Programming, layered architecture, database relationships, REST API development, and MVC web application development.
+## Fitur
 
-## Features
+- Melihat daftar pengguna dan memilih akun.
+- Membuat pengguna beserta wallet dan memperbarui data pengguna melalui API.
+- Melihat saldo serta ringkasan pemasukan dan pengeluaran.
+- Melakukan top up dan transfer antar-wallet.
+- Melihat riwayat transaksi dan memfilter pemasukan atau pengeluaran.
+- Menjaga konsistensi saldo dan catatan transaksi menggunakan transaksi database.
 
-### User Management
-- View all registered users.
-- View user details.
-- Create a new user with an automatically generated wallet.
-- Update user information.
-
-### Wallet Management
-- View wallet information and current balance.
-- Top up wallet balance.
-- Transfer funds between users.
-- Validate transaction amounts and wallet balances.
-
-### Transaction History
-- View transaction history.
-- Filter transactions by:
-  - All transactions
-  - Income
-  - Expense
-- Display transaction amounts in Indonesian Rupiah format.
-
-## Application Screenshots
-
-Choose a registered account to open its wallet:
-
-![E-Wallet account selection screen](screenshots/account-selection.png)
-
-The wallet dashboard shows the available balance, wallet number, and shortcuts to top up, transfer, and view transaction history:
-
-![E-Wallet wallet dashboard](screenshots/wallet-dashboard.png)
-
-Top up a wallet with a custom amount or choose one of the quick amounts:
-
-![E-Wallet top-up form](screenshots/top-up.png)
-
-Send funds to another user by selecting a recipient and entering the amount:
-
-![E-Wallet transfer form](screenshots/transfer.png)
-
-Review incoming and outgoing transactions, and filter the history by type:
-
-![E-Wallet transaction history](screenshots/transaction-history.png)
-
-## Technology Stack
-
-- **Language:** C#
-- **Framework:** .NET 10
-- **Backend:** ASP.NET Core Web API
-- **Frontend:** ASP.NET Core MVC with Razor Views
-- **Database:** Microsoft SQL Server
-- **Data Access:** ADO.NET
-- **API Documentation:** Swagger / Swashbuckle
-- **Database Driver:** Microsoft.Data.SqlClient
-
-## Project Architecture
-
-The solution uses a layered architecture with three main projects:
+## Struktur Project
 
 ```text
 weekly5/
-├── src/
-│   ├── EWallet.Api/
-│   │   ├── Controllers/
-│   │   ├── Handlers/
-│   │   └── Program.cs
-│   │
-│   ├── EWallet.Core/
-│   │   ├── Data/
-│   │   ├── DTOs/
-│   │   ├── Enums/
-│   │   ├── Exceptions/
-│   │   ├── Interfaces/
-│   │   ├── Models/
-│   │   ├── Repositories/
-│   │   ├── Services/
-│   │   └── database/
-│   │
-│   └── EWallet.Mvc/
-│       ├── Controllers/
-│       ├── Models/
-│       ├── ViewModels/
-│       ├── Views/
-│       └── wwwroot/
-│
-└── EWallet.slnx
+├── EWallet.slnx
+└── src/
+    ├── EWallet.Api/
+    │   ├── Controllers/       # REST API: Users, Wallets, Transactions
+    │   ├── Handlers/          # Penanganan exception API
+    │   └── Program.cs         # DI, Swagger, dan HTTP pipeline
+    ├── EWallet.Core/
+    │   ├── Data/              # Koneksi SQL Server
+    │   ├── DTOs/              # Request dan response API
+    │   ├── Enums/             # Jenis transaksi
+    │   ├── Exceptions/
+    │   ├── Interfaces/        # Kontrak repository dan service
+    │   ├── Models/            # User, Wallet, Transaction
+    │   ├── Repositories/      # Query dan perintah ADO.NET
+    │   ├── Services/          # Aturan bisnis
+    │   └── database/          # Skrip database, tabel, seed, migrasi
+    └── EWallet.Mvc/
+        ├── Controllers/       # HomeController dan WalletController
+        ├── ViewModels/
+        ├── Views/             # Razor Views
+        └── wwwroot/           # CSS, JavaScript, dan pustaka frontend
 ```
 
-### Architecture Overview
+## ERD
 
-```text
-              ┌─────────────────┐
-              │   EWallet.Api   │
-              │   REST API      │
-              └────────┬────────┘
-                       │
-                       ▼
-              ┌─────────────────┐
-              │   EWallet.Core  │
-              │                 │
-              │    Services     │
-              │    Repositories │
-              │    Models       │
-              │    Interfaces   │
-              └────────┬────────┘
-                       │
-                       ▼
-              ┌─────────────────┐
-              │   SQL Server    │
-              │    EWalletDb    │
-              └─────────────────┘
+```mermaid
+erDiagram
+    USERS ||--o| WALLETS : memiliki
+    WALLETS ||--o{ TRANSACTIONS : pengirim
+    WALLETS ||--o{ TRANSACTIONS : penerima
 
-              ┌─────────────────┐
-              │   EWallet.Mvc   │
-              │  Razor Views    │
-              └────────┬────────┘
-                       │
-                       └──────► EWallet.Core
+    USERS {
+        int Id PK
+        nvarchar Name
+        nvarchar Email UK
+        nvarchar Phone
+    }
+    WALLETS {
+        int Id PK
+        int UserId FK,UK
+        nvarchar WalletNumber UK
+        decimal Balance
+    }
+    TRANSACTIONS {
+        int Id PK
+        int SenderWalletId FK "nullable untuk top up"
+        int ReceiverWalletId FK
+        int Type "1 top up, 2 transfer"
+        decimal Amount
+        nvarchar Description "nullable"
+        datetime2 CreatedAt
+    }
 ```
 
-Both API and MVC applications use the same Core project for business logic and database operations. They connect directly to the shared Core layer rather than MVC calling the API.
+Satu pengguna memiliki maksimal satu wallet; setiap wallet terhubung ke satu pengguna. Wallet dapat menjadi pengirim atau penerima banyak transaksi. Pada top up, `SenderWalletId` bernilai `NULL` karena dana berasal dari luar sistem.
 
-## Database Design
+## Alur API dan MVC
 
-The application uses three main tables:
+API dan MVC berbagi lapisan `EWallet.Core` dan database. MVC **tidak** memanggil API; keduanya menggunakan service dan repository yang sama.
 
-### Users
-Stores user information.
+```mermaid
+flowchart LR
+    Client[Swagger / API Client] --> Api[API Controllers]
+    Browser[Browser] --> Mvc[MVC Controllers dan Razor Views]
+    Api --> Services[Core Services]
+    Mvc --> Services
+    Services --> Repos[Core Repositories / ADO.NET]
+    Repos --> Db[(SQL Server: EWalletDb)]
+```
 
-- Id (Primary Key)
-- Name
-- Email (Unique)
-- Phone
+### Alur API
 
-### Wallets
-Stores wallet information.
+1. Client mengirim HTTP request ke endpoint API.
+2. Controller menerima request dan meneruskannya ke service di `EWallet.Core`.
+3. Service memvalidasi aturan bisnis dan meminta repository mengakses database.
+4. API mengembalikan response HTTP; dokumentasi dan uji manual tersedia melalui Swagger.
 
-- Id (Primary Key)
-- UserId (Foreign Key, Unique)
-- WalletNumber (Unique)
-- Balance
+### Alur MVC
 
-Relationship: One User has one Wallet (1:1).
+1. Pengguna memilih akun atau aksi wallet di browser.
+2. `HomeController` atau `WalletController` memanggil service di `EWallet.Core`.
+3. Service dan repository membaca atau mengubah data SQL Server.
+4. Controller mengirim model ke Razor View untuk ditampilkan sebagai halaman.
 
-### Transactions
-Stores wallet transaction records.
+## Daftar Endpoint API
 
-- Id (Primary Key)
-- SenderWalletId (Foreign Key, Nullable)
-- ReceiverWalletId (Foreign Key)
-- Type
-- Amount
-- Description
-- CreatedAt
+Base URL: `http://localhost:5224`
 
-Relationship: A Wallet can participate in many Transactions, either as sender or receiver (1:N).
+Swagger UI (environment Development): `http://localhost:5224/swagger`
 
-### Transaction Types
-
-| Value | Type | Description |
+| Method | Endpoint | Kegunaan |
 |---|---|---|
-| 1 | TopUp | Wallet balance top up |
-| 2 | Transfer | Transfer between wallets |
+| GET | `/api/Users` | Melihat seluruh pengguna |
+| GET | `/api/Users/{id}` | Melihat detail pengguna |
+| POST | `/api/Users` | Membuat pengguna dan wallet |
+| PUT | `/api/Users/{id}` | Memperbarui pengguna |
+| GET | `/api/Wallets/{userId}` | Melihat wallet berdasarkan pengguna |
+| POST | `/api/Wallets/{userId}/topups` | Menambah saldo wallet |
+| POST | `/api/transfers` | Transfer antar-wallet |
+| GET | `/api/users/{userId}/transactions` | Melihat riwayat transaksi pengguna |
 
-For top-up transactions, `SenderWalletId` is NULL because the funds originate externally.
+## Menjalankan Project
 
-## Getting Started
-
-### Prerequisites
-
-Make sure you have installed:
+### Prasyarat
 
 - .NET 10 SDK
 - Microsoft SQL Server
-- SQL Server Management Studio (SSMS) or another SQL client
-- Visual Studio or Visual Studio Code (optional)
+- SSMS atau aplikasi pengelola SQL lainnya (opsional)
 
-### 1. Clone the Repository
+### 1. Siapkan database
 
-```bash
-git clone <repository-url>
-cd weekly5
-```
-
-### 2. Create the Database
-
-Open SQL Server Management Studio and execute the following scripts in order:
+Jalankan skrip berikut di SQL Server secara berurutan:
 
 1. `src/EWallet.Core/database/01_create_database.sql`
 2. `src/EWallet.Core/database/02_create_table.sql`
 3. `src/EWallet.Core/database/03_seed_data.sql`
 
-The seed script inserts three sample users with their wallets and initial transaction records.
+Untuk database yang sudah dibuat sebelum perubahan struktur transaksi, tinjau dan jalankan skrip migrasi `src/EWallet.Core/database/04_migrate_transactions.sql` bila diperlukan. Jalankan skrip seed satu kali per database baru.
 
-**Note:** Execute the seed script only once for a newly created database.
+### 2. Atur connection string
 
-### 3. Configure the Connection String
-
-Update the `DefaultConnection` value in:
+Perbarui `ConnectionStrings:DefaultConnection` pada:
 
 - `src/EWallet.Api/appsettings.json`
 - `src/EWallet.Mvc/appsettings.json`
 
-Example using Windows Authentication:
+Contoh Windows Authentication:
 
 ```json
 {
@@ -217,93 +151,71 @@ Example using Windows Authentication:
 }
 ```
 
-Change the server name and authentication settings according to your SQL Server configuration.
+Sesuaikan nama server dan metode autentikasi dengan konfigurasi lokal. Jangan menyimpan kredensial database ke repository.
 
-### 4. Run the REST API
+### 3. Jalankan API dan MVC
 
-Open a terminal at the solution root:
+Dari direktori root repository, buka dua terminal.
+
+Terminal pertama — API:
 
 ```bash
 dotnet run --project src/EWallet.Api
 ```
 
-API base URL:
-
-`http://localhost:5224`
-
-Swagger UI:
-
-`http://localhost:5224/swagger`
-
-### 5. Run the MVC Application
-
-Open another terminal at the solution root:
+Terminal kedua — MVC:
 
 ```bash
 dotnet run --project src/EWallet.Mvc
 ```
 
-MVC application:
+Alamat default dari launch profile:
 
-`http://localhost:5096`
+- MVC: `http://localhost:5096`
+- API: `http://localhost:5224`
+- Swagger: `http://localhost:5224/swagger` (Development)
 
-The API and MVC applications run independently but share the same database and Core business logic.
+## Hasil Testing
 
-## API Endpoints
+- **Build:** `dotnet build EWallet.slnx` berhasil — 0 error dan 0 warning. Build diverifikasi dengan output sementara karena proses MVC yang sedang aktif mengunci output build standar.
+- **Uji API manual:** `GET /api/Users` dijalankan melalui Swagger dan menghasilkan **HTTP 200 OK**.
+- **Test otomatis:** repository belum memiliki project atau test case unit/integrasi khusus.
 
-Base URL: `http://localhost:5224`
+### Screenshot
 
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | `/api/users` | Get all users |
-| GET | `/api/users/{id}` | Get user by ID |
-| POST | `/api/users` | Create user and wallet |
-| PUT | `/api/users/{id}` | Update user |
-| GET | `/api/wallets/{userId}` | Get wallet by user ID |
-| POST | `/api/wallets/{userId}/topups` | Top up wallet |
-| POST | `/api/transfers` | Transfer funds |
-| GET | `/api/users/{userId}/transactions` | Get transaction history |
+#### Swagger / API testing
 
-For request and response details, run the API and open Swagger UI.
+Hasil pemanggilan endpoint pengguna melalui Swagger (HTTP 200):
 
-## Business Logic and Validation
+![Pengujian GET /api/Users melalui Swagger](screenshots/swagger-api-testing.png)
 
-- Top-up and transfer amounts must be greater than zero.
-- Users cannot transfer funds to their own wallet.
-- Transfers require sufficient sender balance.
-- Sender balance, receiver balance, and transaction records are updated within a database transaction.
-- Database transactions are committed on success and rolled back on failure.
-- User creation and wallet creation are handled within one database transaction.
-- Transaction descriptions are optional.
+#### Razor MVC
 
-## Sample Users
+Dashboard wallet:
 
-The database seed script provides the following sample accounts:
+![Dashboard wallet Razor MVC](screenshots/wallet-dashboard.png)
 
-| Name | Email | Wallet Number | Initial Balance |
-|---|---|---|---:|
-| Andi | andi@gmail.com | WLT001 | Rp400,000 |
-| Budi | budi@gmail.com | WLT002 | Rp400,000 |
-| Citra | citra@gmail.com | WLT003 | Rp750,000 |
+Top up:
 
-## Learning Objectives
+![Form top up wallet](screenshots/top-up.png)
 
-This project demonstrates practical implementation of:
+Transfer:
 
-- Object-Oriented Programming (OOP)
-- Classes, Objects, and Constructors
-- Encapsulation
-- Inheritance, Abstraction, and Polymorphism
-- Interfaces
-- Collections and Generics
-- Layered Architecture
-- Repository and Service patterns
-- RESTful API development
-- ADO.NET database operations
-- SQL Server relationships and constraints
-- Database transactions and rollback handling
-- ASP.NET Core MVC and Razor Views
+![Form transfer antar-wallet](screenshots/transfer.png)
 
-## License
+Riwayat transaksi dan filter:
 
-This project was created for educational purposes.
+![Riwayat transaksi wallet](screenshots/transaction-history.png)
+
+## Aturan Bisnis
+
+- Nominal top up dan transfer harus lebih besar dari nol.
+- Pengguna tidak dapat mentransfer dana ke wallet sendiri.
+- Transfer ditolak bila saldo pengirim tidak mencukupi.
+- Saldo pengirim, saldo penerima, dan catatan transaksi diperbarui dalam satu transaksi database agar dapat di-rollback jika gagal.
+- Pembuatan pengguna dan wallet juga dilakukan dalam satu transaksi database.
+- `Description` transaksi bersifat opsional.
+
+---
+
+Dibuat untuk keperluan pembelajaran dan presentasi proyek.

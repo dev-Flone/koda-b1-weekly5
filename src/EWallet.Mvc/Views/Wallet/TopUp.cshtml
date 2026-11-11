@@ -1,9 +1,11 @@
+@using System.Globalization
 @model EWallet.Mvc.ViewModel.TopUpViewModel
 
 @{
     ViewData["Title"] = "Top Up";
     var quickAmounts = new[] { 50000, 100000, 250000, 500000 };
-    var culture = System.Globalization.CultureInfo.GetCultureInfo("id-ID");
+    var rupiah = (CultureInfo)CultureInfo.GetCultureInfo("id-ID").Clone();
+    rupiah.NumberFormat.CurrencySymbol = "Rp. ";
 }
 
 @section Styles {
@@ -96,7 +98,7 @@
                         @foreach (var amount in quickAmounts)
                         {
                             <button type="button" class="btn btn-outline-secondary" data-amount="@amount">
-                                @amount.ToString("N0", culture)
+                                @amount.ToString("C0", rupiah)
                             </button>
                         }
                     </div>
@@ -106,7 +108,7 @@
                     <label asp-for="Description" class="form-label">
                         Description <span class="text-muted fw-normal">(optional)</span>
                     </label>
-                    <textarea asp-for="Description" class="form-control" rows="3"
+                    <textarea asp-for="Description" class="form-control disable-resize" rows="3"
                               placeholder="e.g. Monthly savings"></textarea>
                     <span asp-validation-for="Description" class="text-danger field-error"></span>
                 </div>
